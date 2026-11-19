@@ -24,8 +24,16 @@
 - When you've reached your monthly-average target, a firework show plays automatically when you open the app.
 - Once the target is reached, fireworks come with **sound** (booms and crackles generated in code, no audio files). A mute button turns the sound off.
 
-### Sleep page
+### Gym page
 Swipe to the second page, or use the tab on Mac.
+
+- **Gym days counter:** shows how many days you went to the gym out of the days in the month (for example **14/31 days**), with a progress bar.
+- **Month picker:** choose the current month or any of the previous 11.
+- **Workouts grouped by date:** each gym day lists its workouts with start time, duration and active calories. The newest day is at the top.
+- **What counts as a gym day:** any day with an Indoor Walk, Strength Training (functional or traditional) or Elliptical workout from Apple Health.
+
+### Sleep page
+Swipe to the third page, or use the tab on Mac.
 
 - **Last sleep card:**
   - total time asleep, bedtime and wake time
@@ -96,6 +104,8 @@ Swipe to the second page, or use the tab on Mac.
 | `MyApp.swift` | App entry point; starts reminders and background step updates |
 | `ContentView.swift` | Home page, fireworks, animated background, theme controls |
 | `StepCounter.swift` | Reads steps and workouts from HealthKit |
+| `GymTracker.swift` | Finds gym workouts in HealthKit and groups them by day |
+| `GymView.swift` | Gym page with month picker and gym-day count |
 | `StepReminders.swift` | Schedules hourly step reminder notifications |
 | `SleepTracker.swift` | Reads sleep data and groups it into nights |
 | `SleepView.swift` | Sleep page, night details and rating guide |

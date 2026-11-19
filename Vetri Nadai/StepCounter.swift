@@ -139,7 +139,7 @@ final class StepCounter: ObservableObject {
     }
 }
 
-private extension HKWorkoutActivityType {
+extension HKWorkoutActivityType {
     func displayName(isIndoor: Bool?) -> String {
         let place = isIndoor.map { $0 ? "Indoor " : "Outdoor " } ?? ""
         switch self {

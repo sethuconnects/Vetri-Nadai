@@ -39,6 +39,7 @@ struct ContentView: View {
 
             TabView {
                 Tab("Home", systemImage: "figure.walk") { mainPage }
+                Tab("Gym", systemImage: "dumbbell.fill") { GymView(accent: accent) }
                 Tab("Sleep", systemImage: "bed.double.fill") { SleepView(accent: accent) }
             }
             .swipeablePages()
