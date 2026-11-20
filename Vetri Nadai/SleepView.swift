@@ -246,7 +246,7 @@ struct SleepRatingInfoView: View {
                     }
                     .padding(.vertical, 6)
                 } footer: {
-                    Text("Each range includes its lower limit, so exactly 7h is Good. Time asleep counts Core, Deep and REM sleep from Health, not time spent awake in bed. The ring fills toward an 8-hour goal.")
+                    Text("Each range includes its lower limit, so exactly 7h is Good. Time asleep counts Core, Deep and REM sleep from Health, not time spent awake in bed. If your watch only covered part of the night, sleep recorded by other sources fills in the rest. The ring fills toward an 8-hour goal.")
                 }
 
                 Section("Colours") {
@@ -306,6 +306,12 @@ struct SleepDetailView: View {
                         stageRow(.deep, night.deep)
                         stageRow(.rem, night.rem)
                         stageRow(.core, night.core)
+                        if night.unstaged >= 60 {
+                            stageRow(.asleep, night.unstaged)
+                            Text("Part of this night has no stage data, for example if your watch's battery ran out.")
+                                .font(.footnote)
+                                .foregroundStyle(.secondary)
+                        }
                     } else {
                         Text("No stage data for this night. Deep, REM and Core are only recorded when you sleep with an Apple Watch.")
                             .font(.footnote)
@@ -327,7 +333,10 @@ struct SleepDetailView: View {
     }
 
     private var stageOrder: [String] {
-        let stages: [SleepTracker.Stage] = night.hasStages ? [.awake, .rem, .core, .deep] : [.awake, .asleep]
+        var stages: [SleepTracker.Stage] = night.hasStages ? [.awake, .rem, .core, .deep] : [.awake, .asleep]
+        if night.hasStages && night.segments.contains(where: { $0.stage == .asleep }) {
+            stages.insert(.asleep, at: 1)
+        }
         return stages.map(\.rawValue)
     }
 

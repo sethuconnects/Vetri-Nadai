@@ -61,7 +61,7 @@ final class GymTracker: ObservableObject {
         }
         var result: [Day] = []
         do {
-            try await store.requestAuthorization(toShare: [], read: [HKObjectType.workoutType(), energyType])
+            try await HealthAuthorization.requestReadAccess(to: [HKObjectType.workoutType(), energyType])
             let query = HKSampleQueryDescriptor(
                 predicates: [.workout(HKQuery.predicateForSamples(withStart: interval.start, end: interval.end))],
                 sortDescriptors: [SortDescriptor(\.startDate)]

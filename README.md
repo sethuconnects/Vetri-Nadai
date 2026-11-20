@@ -112,6 +112,7 @@ Swipe to the third page, or use the tab on Mac.
 | `MyApp.swift` | App entry point; starts reminders and background step updates |
 | `ContentView.swift` | Home page, fireworks, animated background, theme controls |
 | `StepCounter.swift` | Reads steps and workouts from HealthKit |
+| `HealthAuthorization.swift` | Asks for Health access once per launch, shared by all trackers |
 | `GymTracker.swift` | Finds gym workouts in HealthKit and groups them by day |
 | `GymView.swift` | Gym page with month picker and gym-day count |
 | `StepReminders.swift` | Schedules hourly step reminder notifications |

@@ -37,12 +37,14 @@ final class StepCounter: ObservableObject {
     private var observerQuery: HKObserverQuery?
     private let stepType = HKQuantityType(.stepCount)
     private let energyType = HKQuantityType(.activeEnergyBurned)
-    private let distanceTypes = [
-        HKQuantityType(.distanceWalkingRunning),
-        HKQuantityType(.distanceCycling),
-        HKQuantityType(.distanceSwimming),
+    private static let distanceTypes: [HKQuantityTypeIdentifier] = [
+        .distanceWalkingRunning, .distanceCycling, .distanceSwimming, .distanceRowing, .distanceWheelchair,
     ]
+    private var readTypes: Set<HKObjectType> {
+        Set([stepType, energyType, HKObjectType.workoutType()] + Self.distanceTypes.map { HKQuantityType($0) })
+    }
 
+    /// Full refresh for the screen: step stats, reminders and recent workouts.
     func refresh() async {
         #if DEBUG
         if DemoData.isEnabled {
@@ -55,11 +57,22 @@ final class StepCounter: ObservableObject {
         }
         #endif
         guard HKHealthStore.isHealthDataAvailable() else { return }
+        do {
+            try await HealthAuthorization.requestReadAccess(to: readTypes)
+        } catch {
+            clearStepStats()
+            recentWorkouts = []
+            return
+        }
+        await refreshSteps()
+        recentWorkouts = (try? await fetchRecentWorkouts()) ?? []
+    }
+
+    /// Step stats and reminders only. Kept light so background wake-ups finish quickly.
+    private func refreshSteps() async {
         let calendar = Calendar.current
         let now = Date.now
-        let readTypes: Set<HKObjectType> = Set([stepType, energyType, HKObjectType.workoutType()] + distanceTypes)
         do {
-            try await store.requestAuthorization(toShare: [], read: readTypes)
             let startOfToday = calendar.startOfDay(for: now)
             steps = Int(try await totalSteps(from: startOfToday))
 
@@ -79,12 +92,15 @@ final class StepCounter: ObservableObject {
                 daysSoFar: Int(daysSoFar)
             )
         } catch {
-            steps = nil
-            yesterdaySteps = nil
-            monthAverage = nil
-            stepsToTarget = nil
+            clearStepStats()
         }
-        recentWorkouts = (try? await fetchRecentWorkouts()) ?? []
+    }
+
+    private func clearStepStats() {
+        steps = nil
+        yesterdaySteps = nil
+        monthAverage = nil
+        stepsToTarget = nil
     }
 
     /// Wakes the app (at most hourly) when new steps are recorded so reminder numbers stay fresh.
@@ -96,8 +112,10 @@ final class StepCounter: ObservableObject {
         guard HKHealthStore.isHealthDataAvailable(), observerQuery == nil else { return }
         let query = HKObserverQuery(sampleType: stepType, predicate: nil) { @Sendable _, completionHandler, error in
             guard error == nil else { return completionHandler() }
+            // Only the reminder numbers need updating here; workouts are loaded when the screen is shown.
+            // HealthKit backs off background delivery if the handler is slow, so skip anything else.
             Task { @MainActor in
-                await StepCounter.shared.refresh()
+                await StepCounter.shared.refreshSteps()
                 completionHandler()
             }
         }
@@ -134,9 +152,9 @@ final class StepCounter: ObservableObject {
     }
 
     private func summary(of workout: HKWorkout) async throws -> WorkoutSummary {
-        let distance = distanceTypes.lazy
-            .compactMap { workout.statistics(for: $0)?.sumQuantity()?.doubleValue(for: .meter()) }
-            .first { $0 > 0 }
+        let distance = workout.workoutActivityType.distanceType
+            .flatMap { workout.statistics(for: HKQuantityType($0))?.sumQuantity()?.doubleValue(for: .meter()) }
+            .flatMap { $0 > 0 ? $0 : nil }
         let energy = workout.statistics(for: energyType)?.sumQuantity()?.doubleValue(for: .kilocalorie())
         let steps = try await totalSteps(from: workout.startDate, to: workout.endDate)
         let isIndoor = workout.metadata?[HKMetadataKeyIndoorWorkout] as? Bool
@@ -153,6 +171,18 @@ final class StepCounter: ObservableObject {
 }
 
 extension HKWorkoutActivityType {
+    /// The distance that matters for this activity, or nil when distance isn't meaningful (e.g. strength training).
+    var distanceType: HKQuantityTypeIdentifier? {
+        switch self {
+        case .walking, .running, .hiking: .distanceWalkingRunning
+        case .cycling: .distanceCycling
+        case .swimming: .distanceSwimming
+        case .rowing: .distanceRowing
+        case .wheelchairWalkPace, .wheelchairRunPace: .distanceWheelchair
+        default: nil
+        }
+    }
+
     func displayName(isIndoor: Bool?) -> String {
         let place = isIndoor.map { $0 ? "Indoor " : "Outdoor " } ?? ""
         switch self {
