@@ -45,6 +45,13 @@ final class GymTracker: ObservableObject {
 
     func load(month: Date) async {
         requestedMonth = month
+        #if DEBUG
+        if DemoData.isEnabled {
+            days = DemoData.gymDays(for: month)
+            loadedMonth = month
+            return
+        }
+        #endif
         let calendar = Calendar.current
         guard HKHealthStore.isHealthDataAvailable(),
               let interval = calendar.dateInterval(of: .month, for: month) else {

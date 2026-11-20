@@ -44,6 +44,16 @@ final class StepCounter: ObservableObject {
     ]
 
     func refresh() async {
+        #if DEBUG
+        if DemoData.isEnabled {
+            steps = DemoData.steps
+            yesterdaySteps = DemoData.yesterdaySteps
+            monthAverage = DemoData.monthAverage
+            stepsToTarget = DemoData.stepsToTarget
+            recentWorkouts = DemoData.workouts
+            return
+        }
+        #endif
         guard HKHealthStore.isHealthDataAvailable() else { return }
         let calendar = Calendar.current
         let now = Date.now
@@ -80,6 +90,9 @@ final class StepCounter: ObservableObject {
     /// Wakes the app (at most hourly) when new steps are recorded so reminder numbers stay fresh.
     /// Must be called at launch for background delivery to work.
     func startBackgroundUpdates() {
+        #if DEBUG
+        if DemoData.isEnabled { return }
+        #endif
         guard HKHealthStore.isHealthDataAvailable(), observerQuery == nil else { return }
         let query = HKObserverQuery(sampleType: stepType, predicate: nil) { @Sendable _, completionHandler, error in
             guard error == nil else { return completionHandler() }

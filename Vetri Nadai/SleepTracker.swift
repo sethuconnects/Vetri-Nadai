@@ -83,6 +83,13 @@ final class SleepTracker: ObservableObject {
     private init() {}
 
     func refresh() async {
+        #if DEBUG
+        if DemoData.isEnabled {
+            nights = DemoData.nights
+            hasLoaded = true
+            return
+        }
+        #endif
         guard HKHealthStore.isHealthDataAvailable() else {
             hasLoaded = true
             return

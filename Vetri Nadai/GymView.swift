@@ -56,6 +56,7 @@ struct GymView: View {
             }
             .pickerStyle(.menu)
             .labelsHidden()
+            .fixedSize()
         }
         .foregroundStyle(accent)
         .padding(.horizontal, 20)

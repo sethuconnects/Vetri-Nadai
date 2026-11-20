@@ -2,6 +2,14 @@
 
 **Vetri Nadai** (Tamil for "victory walk") is a SwiftUI app for iPhone, iPad, Mac and Apple Vision Pro. It uses Apple Health data to track your steps, workouts and sleep. It sends hourly reminders to keep you walking, celebrates goals with fireworks, and has a screen-time lock so the app itself isn't overused.
 
+## Screenshots
+
+| Home | Gym | Sleep | Settings |
+|---|---|---|---|
+| <img src="docs/screenshots/home.png" width="200" alt="Home page"> | <img src="docs/screenshots/gym.png" width="200" alt="Gym page"> | <img src="docs/screenshots/sleep.png" width="200" alt="Sleep page"> | <img src="docs/screenshots/settings.png" width="200" alt="Settings"> |
+
+<sub>Screenshots use sample data. See [Taking screenshots](#taking-screenshots).</sub>
+
 ## Features
 
 ### Home page: step tracking
@@ -112,9 +120,22 @@ Swipe to the third page, or use the tab on Mac.
 | `SettingsView.swift` | Settings screen |
 | `UsageLimit.swift` | Screen-time lock and its sound |
 | `CelebrationSound.swift` | Firework sound effects |
+| `DemoData.swift` | Sample data for screenshots (Debug builds only) |
 
 ## Getting started
 1. Open `Vetri Nadai.xcodeproj` in Xcode.
 2. Select your own development team under **Signing & Capabilities**. HealthKit needs a signed build.
 3. Run it on a real iPhone, ideally with an Apple Watch paired, to see step, workout and sleep data.
 4. When the app asks, allow access to Health and notifications.
+
+## Taking screenshots
+Debug builds include a sample-data mode, so you can take screenshots without real Health data. Launch the app with these arguments (in Xcode, **Product ▸ Scheme ▸ Edit Scheme ▸ Run ▸ Arguments**):
+
+| Argument | Effect |
+|---|---|
+| `-demoData` | Uses sample steps, workouts, gym days and sleep instead of Health data |
+| `-userName Sethu` | Sets the greeting name |
+| `-demoPage 1` | Opens on a page: `0` Home, `1` Gym, `2` Sleep |
+| `-demoSettings YES` | Opens the Settings sheet |
+
+Sample-data mode is not included in Release builds.

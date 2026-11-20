@@ -8,7 +8,8 @@ struct ContentView: View {
     @StateObject private var stepCounter = StepCounter.shared
     @StateObject private var usageLimit = UsageLimit.shared
     @State private var isRefreshing = false
-    @State private var showSettings = false
+    @State private var showSettings = ContentView.demoShowSettings
+    @State private var page = ContentView.demoPage
     @AppStorage(StepCounter.monthlyTargetKey) private var monthlyTarget = StepCounter.defaultTarget
     @AppStorage("isDarkMode") private var isDarkMode = false
     @AppStorage(CelebrationSound.mutedKey) private var isMuted = false
@@ -33,14 +34,30 @@ struct ContentView: View {
         #endif
     }
 
+    private static var demoPage: Int {
+        #if DEBUG
+        return DemoData.page
+        #else
+        return 0
+        #endif
+    }
+
+    private static var demoShowSettings: Bool {
+        #if DEBUG
+        return DemoData.showSettings
+        #else
+        return false
+        #endif
+    }
+
     var body: some View {
         ZStack {
             LiquidBackground(accent: accent, isDark: isDarkMode)
 
-            TabView {
-                Tab("Home", systemImage: "figure.walk") { mainPage }
-                Tab("Gym", systemImage: "dumbbell.fill") { GymView(accent: accent) }
-                Tab("Sleep", systemImage: "bed.double.fill") { SleepView(accent: accent) }
+            TabView(selection: $page) {
+                Tab("Home", systemImage: "figure.walk", value: 0) { mainPage }
+                Tab("Gym", systemImage: "dumbbell.fill", value: 1) { GymView(accent: accent) }
+                Tab("Sleep", systemImage: "bed.double.fill", value: 2) { SleepView(accent: accent) }
             }
             .swipeablePages()
 
